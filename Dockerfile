@@ -1,15 +1,17 @@
-FROM alpine
-RUN apk add --no-cache curl openssl
-RUN mkdir /certs
-RUN curl -LsSk https://raw.githubusercontent.com/codice/ddf/master/distribution/ddf-common/src/main/resources/etc/certs/demoCA/cacert.pem -o /certs/ca.pem
-RUN curl -LsSk https://raw.githubusercontent.com/codice/ddf/master/distribution/ddf-common/src/main/resources/etc/certs/demoCA/private/cakey.pem -o /certs/ca.key
-RUN openssl rsa -in /certs/ca.key -out /certs/ca-key.pem -passin pass:secret
-
-FROM oconnormi/cfssl
-COPY files/config/config.json /config.json
-COPY --from=0 /certs/ca.pem /ca.pem
-COPY --from=0 /certs/ca.pem /root-bundle.crt
-COPY --from=0 /certs/ca-key.pem /ca-key.pem
-
+FROM centos
+ENV ENTRYPOINT_HOME=/entrypoint
+ENV GOPATH=/go
+ENV  PATH=$PATH:$GOPATH/bin
+RUN yum install -y git go \
+  && go get -u github.com/cloudflare/cfssl/cmd/cfssl \
+               github.com/cloudflare/cfssl/cmd/cfssljson \
+  && mkdir -p /ca/db \
+  && mkdir -p /ca/config \
+  && mkdir -p /ca/certs \
+  && mkdir -p /ca/.db_seed \
+  && mkdir -p /entrypoint
+COPY files/db/certs.db /ca/.db_seed/certs.db
+COPY scripts/* /entrypoint/
+VOLUME /ca/config /ca/certs /ca/db
 EXPOSE 80
-CMD ["serve", "-address=0.0.0.0", "-port=80", "-ca=/ca.pem", "-ca-key=/ca-key.pem", "-config=/config.json", "-ca-bundle=/root-bundle.crt"]
+ENTRYPOINT ["/entrypoint/run.sh"]
