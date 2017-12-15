@@ -5,6 +5,7 @@ ENV  PATH=$PATH:$GOPATH/bin
 RUN yum install -y git go \
   && go get -u github.com/cloudflare/cfssl/cmd/cfssl \
                github.com/cloudflare/cfssl/cmd/cfssljson \
+               github.com/cloudflare/cfssl/cmd/mkbundle \
   && mkdir -p /ca/db \
   && mkdir -p /ca/config \
   && mkdir -p /ca/certs \
@@ -13,5 +14,5 @@ RUN yum install -y git go \
 COPY files/db/certs.db /ca/.db_seed/certs.db
 COPY scripts/* /entrypoint/
 VOLUME /ca/config /ca/certs /ca/db
-EXPOSE 80
+EXPOSE 443
 ENTRYPOINT ["/entrypoint/run.sh"]

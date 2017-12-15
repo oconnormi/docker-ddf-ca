@@ -17,7 +17,7 @@ _ca_db_directory=${_ca_directory}/db
 _ca_db_seed_file=${_ca_directory}/.db_seed/${_ca_db_name}
 
 _cfssl_serve_address=0.0.0.0
-_cfssl_serve_port=80
+_cfssl_serve_port=443
 _cfssl_serve_config=${_ca_config_directory}/${_ca_config_name}
 _cfssl_serve_dbconfig=${_ca_config_directory}/${_ca_dbconfig_name}
 _cfssl_serve_ca_bundle=${_ca_bundles_directory}/${_ca_root_bundle_name}
@@ -73,8 +73,8 @@ function initCA() {
     echo "CA doesn't already exist, initializing now"
     mkdir -p /tmp/ca-certs && pushd /tmp/ca-certs
     cfssl genkey -initca ${_ca_config_directory}/${_ca_csr_name} | cfssljson -bare ca
+    mkbundle -f ${_ca_bundles_directory}/${_ca_root_bundle_name} ca.pem
     cp ca.pem ${_ca_certs_directory}
-    cp ca.pem ${_ca_bundles_directory}/${_ca_root_bundle_name}
     cp ca-key.pem ${_ca_keys_directory}
     popd
   else
@@ -123,7 +123,11 @@ function start() {
     -ca-key=${_cfssl_serve_ca_key} \
     -config=${_cfssl_serve_config} \
     -db-config=${_cfssl_serve_dbconfig} \
-    -ca-bundle=${_cfssl_serve_ca_bundle}
+    -ca-bundle=${_cfssl_serve_ca_bundle} \
+    -tls-key=${_cfssl_serve_ca_key} \
+    -tls-cert=${_cfssl_serve_ca_cert} \
+    -responder=${_cfssl_serve_ca_cert} \
+    -responder-key=${_cfssl_serve_ca_key}
 }
 
 function main() {
