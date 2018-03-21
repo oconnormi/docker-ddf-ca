@@ -50,3 +50,8 @@ The following environment variables can be used to customize the generated CA Ce
 | `ROOT_CA_ORGANIZATION`        | Sets the Organization value for the generated CA Certificate        | `DDF`                      |
 | `ROOT_CA_ORGANIZATIONAL_UNIT` | Sets the Organizational Unit value for the generated CA Certificate | `Dev`                      |
 | `ROOT_CA_STATE`               | Sets the State value for the generated CA Certificate               | `AZ`                       |
+
+# Disabling TLS
+
+By default the CA is served on port 443 over TLS
+To disable this and run on port 80 set the environment variable `TLS_ENABLED=false`
